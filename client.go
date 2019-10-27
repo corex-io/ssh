@@ -77,7 +77,9 @@ func (c *Client) CmdOutBytes(cmd string) ([]byte, error) {
 		return nil, fmt.Errorf("create ssh session: %w", err)
 	}
 	defer sess.Close()
-	sess.Setenv("LANG", "zh_CN.UTF-8")
+	for k, v := range c.opts.Env {
+		sess.Setenv(k, v)
+	}
 
 	if c.opts.Pseudo {
 		// Set up terminal modes

@@ -12,6 +12,7 @@ type Options struct {
 	QAs      map[string]string `json:"qas" yaml:"qas"`
 	Pseudo   bool              `json:"pseudo" yaml:"pseudo"` // like "ssh -tt", Force pseudo-terminal allocation.
 	Timeout  int               `json:"timeout" yaml:"timeout"`
+	Env      map[string]string `json:"env" yaml:"env"`
 }
 
 // Option func
@@ -23,6 +24,9 @@ func newOptions(opts ...Option) Options {
 		Port:     22,
 		QAs:      make(map[string]string),
 		Timeout:  3,
+		Env: map[string]string{
+			"LANG": "zh_CN.UTF-8",
+		},
 	}
 
 	for _, o := range opts {
@@ -99,5 +103,12 @@ func Pseudo(pseudo bool) Option {
 func Timeout(timeout int) Option {
 	return func(o *Options) {
 		o.Timeout = timeout
+	}
+}
+
+// Env env
+func Env(key, value string) Option {
+	return func(o *Options) {
+		o.Env[key] = value
 	}
 }
