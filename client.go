@@ -78,7 +78,9 @@ func (c *Client) CmdOutBytes(cmd string) ([]byte, error) {
 	}
 	defer sess.Close()
 	for k, v := range c.opts.Env {
-		sess.Setenv(k, v)
+		if err = sess.Setenv(k, v); err != nil {
+			return nil, fmt.Errorf("AcceptEnv? Setenv[%s]: %w", k, err)
+		}
 	}
 
 	if c.opts.Pseudo {
