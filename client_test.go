@@ -1,7 +1,7 @@
 package ssh_test
 
 import (
-	"ssh"
+	"github.com/corex-io/ssh"
 	"testing"
 )
 

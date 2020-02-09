@@ -1,4 +1,4 @@
-module ssh
+module github.com/corex-io/ssh
 
 go 1.13
 
