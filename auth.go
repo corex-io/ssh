@@ -2,7 +2,6 @@ package ssh
 
 import (
 	"encoding/base64"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
