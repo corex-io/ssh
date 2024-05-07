@@ -1,7 +1,9 @@
 package ssh
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -9,6 +11,7 @@ import (
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/sync/errgroup"
 	"golang.org/x/term"
 )
 
@@ -47,42 +50,33 @@ func (c *Client) LoadConfig(v interface{}) error {
 
 // FastConnect connect2
 func (c *Client) FastConnect() error {
-	wg := WithContext()
-	probechannel := make(chan struct {
-		client *ssh.Client
-		passwd string
-	}, 1)
-	defer close(probechannel)
-	for _, passwd := range c.opts.Passwords {
+	group, _ := errgroup.WithContext(context.Background())
+	var errs error
+
+	var passwords []string
+	if c.opts.Password != "" {
+		passwords = append(passwords, c.opts.Password)
+	}
+	passwords = append(passwords, c.opts.Passwords...)
+
+	for _, passwd := range passwords {
 		password := passwd
-		wg.Go(func() error {
-			return func(password string) error {
-				client, err := c.connect(c.opts.Username, ssh.Password(password))
-				if err != nil {
-					return err
-				}
-				probechannel <- struct {
-					client *ssh.Client
-					passwd string
-				}{client: client, passwd: password}
-				return fmt.Errorf("ssh %s@%s [%s]: %v", c.opts.Username, c.opts.IP, password, err)
-			}(password)
+		group.Go(func() error {
+			client, err := c.connect(c.opts.Username, ssh.Password(password), PasswordKeyboardInteractive(password))
+			if err != nil {
+				fmt.Println(err)
+				errs = err
+				return nil
+			}
+			c.client = client
+			c.pass = password
+			return io.EOF
 		})
-
 	}
-	wg.Wait()
-
-	select {
-	case probe, ok := <-probechannel:
-		if !ok {
-			return fmt.Errorf("chan close")
-		}
-		c.client = probe.client
-		c.pass = probe.passwd
+	if err := group.Wait(); err != nil && errors.Is(err, io.EOF) {
 		return nil
-	default:
-		return fmt.Errorf("connect fail: %w", wg.Error())
 	}
+	return errs
 }
 
 // Connect dail connect
