@@ -1,6 +1,9 @@
 package ssh
 
-import "fmt"
+import (
+	"fmt"
+	"golang.org/x/crypto/ssh"
+)
 
 type keyboardInteractive map[string]string
 
@@ -14,4 +17,14 @@ func (cr keyboardInteractive) Challenge(user, instruction string, questions []st
 		answers = append(answers, answer)
 	}
 	return answers, nil
+}
+
+func PasswordKeyboardInteractive(password string) ssh.KeyboardInteractiveChallenge {
+	return func(user, instruction string, questions []string, echos []bool) ([]string, error) {
+		answers := make([]string, len(questions))
+		for i := range answers {
+			answers[i] = password
+		}
+		return answers, nil
+	}
 }

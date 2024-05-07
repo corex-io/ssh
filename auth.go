@@ -70,6 +70,10 @@ func (c *Client) authMethods() ([]ssh.AuthMethod, error) {
 		auths = append(auths, auth)
 	}
 
+	for _, password := range passwords {
+		auths = append(auths, PasswordKeyboardInteractive(password))
+	}
+
 	if len(c.opts.QAs) != 0 {
 		auths = append(auths, c.keyboardAuthMethod())
 	}
