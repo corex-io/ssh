@@ -2,7 +2,6 @@ package ssh
 
 import (
 	"encoding/base64"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -63,8 +62,6 @@ func (c *Client) authMethods() ([]ssh.AuthMethod, error) {
 		auth := ssh.RetryableAuthMethod(ssh.PasswordCallback(func() (string, error) {
 			password := passwords[n]
 			n++
-			fmt.Println(n, password)
-
 			return password, nil
 		}), length)
 		auths = append(auths, auth)
