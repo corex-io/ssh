@@ -7,7 +7,7 @@ import (
 )
 
 func Test_login(t *testing.T) {
-	client := ssh.New(ssh.IP("127..0.0.1"), ssh.Port(36000), ssh.Username("root"), ssh.Password("111"), ssh.Timeout(3))
+	client := ssh.New(ssh.IP("127.0.0.1"), ssh.Port(36000), ssh.Username("root"), ssh.Password("111"), ssh.Timeout(3))
 	if err := client.Connect(); err != nil {
 		t.Error(err)
 		return
@@ -20,7 +20,7 @@ func Test_login(t *testing.T) {
 	t.Log(string(out))
 }
 func Test_FastConnect(t *testing.T) {
-	client := ssh.New(ssh.IP("127..0.0.1"), ssh.Port(36000), ssh.Username("root"), ssh.Password("111"), ssh.Timeout(3))
+	client := ssh.New(ssh.IP("127.0.0.1"), ssh.Port(36000), ssh.Username("root"), ssh.Password("111"), ssh.Timeout(3))
 
 	err := client.FastConnect()
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/pkg/sftp"
@@ -51,8 +52,8 @@ func (c *Client) LoadConfig(v interface{}) error {
 // FastConnect connect2
 func (c *Client) FastConnect() error {
 	group, _ := errgroup.WithContext(context.Background())
-	var errs error
-
+	var cerr error
+	var once sync.Once
 	var passwords []string
 	if c.opts.Password != "" {
 		passwords = append(passwords, c.opts.Password)
@@ -64,8 +65,7 @@ func (c *Client) FastConnect() error {
 		group.Go(func() error {
 			client, err := c.connect(c.opts.Username, ssh.Password(password), PasswordKeyboardInteractive(password))
 			if err != nil {
-				fmt.Println(err)
-				errs = err
+				once.Do(func() { cerr = err })
 				return nil
 			}
 			c.client = client
@@ -76,7 +76,7 @@ func (c *Client) FastConnect() error {
 	if err := group.Wait(); err != nil && errors.Is(err, io.EOF) {
 		return nil
 	}
-	return errs
+	return cerr
 }
 
 // Connect dail connect
